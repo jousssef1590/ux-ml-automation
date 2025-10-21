@@ -1,0 +1,37 @@
+name: Generate Reports
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: "0 9 * * 1"   # Every Monday at 09:00 UTC
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🛎️ Checkout repository
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas scikit-learn transformers torch tqdm matplotlib reportlab deep-translator openpyxl
+
+    - name: 🚀 Run data + ML + report pipeline
+      run: |
+        python scripts/data_pipeline.py
+        python scripts/ml_pipeline.py
+        python scripts/generate_reports.py
+
+    - name: 📤 Upload generated reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: feedback-reports
+        path: reports/
